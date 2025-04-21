@@ -1,10 +1,13 @@
 import pandas as pd
 import numpy as np
-
-main_data = '../Data/FinalData.csv'
+import os
 
 # Thêm cột "Day of Year" (0: thứ Hai, ..., 6: Chủ Nhật)
-main_data = pd.read_csv(main_data)
+base_dir = os.path.dirname(__file__)
+csv_path = os.path.join(base_dir, "../Data/FinalData.csv")
+
+main_data = pd.read_csv(csv_path)
+main_data['Date'] = pd.to_datetime(main_data['Date'], errors='coerce')
 main_data['Day of Year'] = main_data['Date'].dt.dayofyear
 
 
@@ -42,6 +45,8 @@ def process_AQI_data(source_df):
 
             if values:
                 source_df.loc[i, feature] = round(sum(values) / len(values), 2)
+
+    source_df['Day of Year'] = source_df['Date'].dt.dayofyear
 
     # Thay thế giá trị 0 bằng giá trị trung bình và một chút nhiễu động ngẫu nhiên
     for index, row in source_df.iterrows():

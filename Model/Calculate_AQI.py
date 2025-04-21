@@ -6,7 +6,7 @@ def calculate_sub_index(C, breakpoints):
     return None 
 
 
-def calculate_aqi(pm25, pm10, o3, no2, so2, co):
+def calculate_aqi(co, no2, o3, pm10, pm25, so2):
     # PM2.5 (µg/m³)
     pm25_bp = [
         (0.0, 12.0, 0, 50),

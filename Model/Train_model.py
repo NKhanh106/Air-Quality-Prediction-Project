@@ -5,12 +5,16 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
+import os
 import pandas as pd
-import Model
+from Model import create_sequences, AirQualityLSTM
+
+base_dir = os.path.dirname(__file__)
+csv_path = os.path.join(base_dir, "../Data/FinalData.csv")
 
 def train_lstm_model():
-    file_path = '../Data/FinalData.csv'
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(csv_path)
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 
     features = ['co', 'no2', 'o3', 'pm10', 'pm25', 'so2', 'Temp', 'Rain', 'Cloud', 'Pressure', 'Wind', 'Gust']
     data = df[features].values
@@ -34,7 +38,7 @@ def train_lstm_model():
 
 
     # Tạo sequences
-    X, y = Model.create_sequences(data_normalized, seq_length)
+    X, y = create_sequences(data_normalized, seq_length)
 
 
     # Chia dữ liệu thành tập train và test
@@ -57,7 +61,7 @@ def train_lstm_model():
 
     # Khởi tạo mô hình, loss function và optimizer
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = Model.AirQualityLSTM(input_size, hidden_size, num_layers, output_size).to(device)
+    model = AirQualityLSTM(input_size, hidden_size, num_layers, output_size).to(device)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
