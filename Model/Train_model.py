@@ -102,3 +102,6 @@ def train_lstm_model():
 
     #Lưu lại mô hình LSTM tốt nhất
     torch.save(model.state_dict(), './Built_Model/lstm_model.pth')
+
+if __name__ == "__main__":
+    train_lstm_model()
