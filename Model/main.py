@@ -1,102 +1,43 @@
-import torch
-import torch.nn as nn
-import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
-from sklearn.metrics import r2_score
-import pandas as pd
-import Model
-import Data_preprocess
 import Data_mining
+import Data_preprocess
+import Train_model
+import Calculate_AQI
+import torch
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+import Model
 
 
-file_path = '../Data/FinalData.csv'
-df = pd.read_csv(file_path)
-
-features = ['co', 'no2', 'o3', 'pm10', 'pm25', 'so2', 'Temp', 'Rain', 'Cloud', 'Pressure', 'Wind', 'Gust']
+#Đọc lại dữ liệu và chuẩn hóa như lúc train
+df = pd.read_csv('../Data/FinalData.csv')
+features = ['co','no2','o3','pm10','pm25','so2','Temp','Rain','Cloud','Pressure','Wind','Gust']
 data = df[features].values
 
 scaler = MinMaxScaler()
-data_normalized = scaler.fit_transform(data)
+data_norm = scaler.fit_transform(data)
 
-torch.manual_seed(42)
-np.random.seed(42)
-
-
-# Tham số mô hình
-input_size = 12
-hidden_size = 50
-num_layers = 2
-output_size = 12
-seq_length = 14
-batch_size = 64
-num_epochs = 150
-learning_rate = 0.0005
-
-
-# Tạo sequences
-X, y = Model.create_sequences(data_normalized, seq_length)
-
-
-# Chia dữ liệu thành tập train và test
-train_size = int(0.8 * len(X))
-X_train, X_test = X[:train_size], X[train_size:]
-y_train, y_test = y[:train_size], y[train_size:]
-
-
-# Chuyển sang tensor
-X_train = torch.FloatTensor(X_train)
-y_train = torch.FloatTensor(y_train)
-X_test = torch.FloatTensor(X_test)
-y_test = torch.FloatTensor(y_test)
-
-
-# Tạo DataLoader
-train_dataset = torch.utils.data.TensorDataset(X_train, y_train)
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-
-
-# Khởi tạo mô hình, loss function và optimizer
+#Khởi tạo model và load weights
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+input_size, hidden_size, num_layers, output_size = 12, 50, 2, 12
 model = Model.AirQualityLSTM(input_size, hidden_size, num_layers, output_size).to(device)
-criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
-
-# Huấn luyện mô hình
-model.train()
-for epoch in range(num_epochs):
-    for batch_X, batch_y in train_loader:
-        batch_X, batch_y = batch_X.to(device), batch_y.to(device)
-        
-        outputs = model(batch_X)
-        loss = criterion(outputs, batch_y)
-        
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    
-    if (epoch + 1) % 10 == 0:
-        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.6f}')
-
-
-# Dự đoán trên tập test
+model.load_state_dict(torch.load('./Built_Model/lstm_model.pth', map_location=device))
 model.eval()
+
+#Chuẩn bị input sequence mới (14 mốc cuối)
+seq_length = 14
+last_seq = data_norm[-seq_length:]                      # shape (14,12)
+input_tensor = torch.FloatTensor(last_seq).unsqueeze(0) # shape (1,14,12)
+input_tensor = input_tensor.to(device)
+
+#Dự đoán next step
 with torch.no_grad():
-    X_test = X_test.to(device)
-    predictions = model(X_test).cpu().numpy()
-    y_test = y_test.numpy()
+    pred_norm = model(input_tensor)        # shape (1,12)
+pred_norm = pred_norm.cpu().numpy()       # shape (1,12)
 
+#Inverse transform để ra giá trị gốc
+pred = scaler.inverse_transform(pred_norm)  # shape (1,12)
+pred = pred.flatten()
 
-# Tính R² Score cho từng chỉ số
-r2_scores = {}
-feature_names = ['co', 'no2', 'o3', 'pm10', 'pm25', 'so2', 'Temp', 'Rain', 'Cloud', 'Pressure', 'Wind', 'Gust']
-for i, feature in enumerate(feature_names):
-    r2 = r2_score(y_test[:, i], predictions[:, i])
-    r2_scores[feature] = r2
-    print(f'R² Score for {feature}: {r2:.4f}')
-
-
-#Lưu lại mô hình LSTM tốt nhất
-torch.save(model.state_dict(), './Built_Model/lstm_model.pth')
+#In ra kết quả
+for feat, val in zip(features, pred):
+    print(f"{feat}: {val:.3f}")
