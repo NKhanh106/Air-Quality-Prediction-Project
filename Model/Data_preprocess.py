@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import datetime
 import os
 
 # Thêm cột "Day of Year" (0: thứ Hai, ..., 6: Chủ Nhật)
@@ -18,10 +19,11 @@ def calculate_avg(day_of_week, column):
 
 
 def process_AQI_data(source_df):
-    #Ngoại lệ do sai lệch trong quá trình đo đạc
-    source_df.loc[(source_df['o3'] >= 200), 'o3'] = 0.0
-    source_df.loc[(source_df['no2'] >= 120), 'no2'] = 0.0
-
+    source_df.columns = source_df.columns.str.strip()
+    source_df = source_df.replace(['', ' '], np.nan)
+    source_df = source_df.fillna(0)
+    source_df = source_df.rename(columns={'date': 'Date'})
+    old_df = pd.read_csv(os.path.join(base_dir, "../Data/AQI.csv")) 
     #Định dạng lại các kiểu dữ liệu trong các cột
     source_df['Date'] = source_df['Date'].astype('datetime64[ns]')
     source_df['co'] = source_df['co'].astype(float)
@@ -30,6 +32,23 @@ def process_AQI_data(source_df):
     source_df['pm10'] = source_df['pm10'].astype(float)
     source_df['pm25'] = source_df['pm25'].astype(float)
     source_df['so2'] = source_df['so2'].astype(float)
+
+    old_df['Date'] = old_df['Date'].astype('datetime64[ns]')
+    old_df['co'] = old_df['co'].astype(float)
+    old_df['no2'] = old_df['no2'].astype(float)
+    old_df['o3'] = old_df['o3'].astype(float)
+    old_df['pm10'] = old_df['pm10'].astype(float)
+    old_df['pm25'] = old_df['pm25'].astype(float)
+    old_df['so2'] = old_df['so2'].astype(float)
+
+    source_df = source_df[source_df['Date'] >= (old_df['Date'].max() + datetime.timedelta(days=1))]
+    source_df = source_df[source_df['Date'] < (datetime.datetime.now())]
+    source_df = pd.concat([old_df, source_df], axis=0, ignore_index=True)
+    source_df = source_df.sort_values(by='Date', ascending=True).reset_index(drop= True)
+
+    #Ngoại lệ do sai lệch trong quá trình đo đạc
+    source_df.loc[(source_df['o3'] >= 200), 'o3'] = 0.0
+    source_df.loc[(source_df['no2'] >= 120), 'no2'] = 0.0
 
     #Tính các giá trị tương ứng và trung bình các điểm đo được trong các điểm đo khác nhau
     for feature in ['co', 'no2', 'o3', 'pm10', 'pm25', 'so2']:
