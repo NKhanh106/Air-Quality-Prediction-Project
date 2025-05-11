@@ -16,6 +16,49 @@ aqi_path = os.path.join(base_dir, "../Data/AQI.csv")
 
 old_df = pd.read_csv(csv_path)
 
+def air_quality_crawl():
+    download_dir = os.path.abspath(os.path.join(base_dir, "../Data"))
+    target_path = os.path.join(base_dir, "../Data/hanoi-air-quality.csv")
+
+    # Cấu hình Chrome để lưu file CSV vào thư mục download_dir
+    options = webdriver.ChromeOptions()
+    prefs = {
+        "download.default_directory": download_dir,
+        "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "safebrowsing.enabled": True
+    }
+    options.add_experimental_option("prefs", prefs)
+
+    options.add_argument("--start-maximized")
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://aqicn.org/historical/vn/#!city:vietnam/hanoi")
+
+    wait = WebDriverWait(driver, 15)
+
+    click1_xpath = "/html/body/div[7]/div[1]/div[1]/div[5]/div[2]/div/center[1]/span[2]/div"
+    click1 = wait.until(EC.element_to_be_clickable((By.XPATH, click1_xpath)))
+    driver.execute_script("arguments[0].scrollIntoView(true);", click1)
+    time.sleep(1)
+    driver.execute_script("arguments[0].click();", click1)
+
+    new_element_xpath = "/html/body/div[7]/div[1]/div[1]/div[5]/div[2]/div/center[1]/span[2]/div/center/div"
+    wait.until(EC.presence_of_element_located((By.XPATH, new_element_xpath)))
+
+    if os.path.exists(target_path):
+        os.remove(target_path)
+
+    click2 = driver.find_element(By.XPATH, new_element_xpath)
+    driver.execute_script("arguments[0].scrollIntoView(true);", click2)
+    time.sleep(1)
+    driver.execute_script("arguments[0].click();", click2)
+    time.sleep(5)
+    driver.quit()
+    
+    df = pd.read_csv(target_path)
+    
+    return df
+
 def scrape_weather_to_df(name):
     # Set up options để giảm tài nguyên sử dụng
     options = webdriver.ChromeOptions()
@@ -101,7 +144,7 @@ def process_location(name):
     except Exception as e:
         return pd.DataFrame(), name, False
 
-def main():
+def weather_data_crawl():
     name_tinh_process = ["ha-noi"]
     max_workers = 1
     
@@ -136,11 +179,10 @@ def main():
 
 
 def update_weather_data():
-    df = main()
+    df = weather_data_crawl()
     df = process_weather_data(df)
     
-    #AQI data tải thủ công ở https://aqicn.org/historical/vn/#!city:vietnam/hanoi
-    aqi_df = pd.read_csv(aqi_path)
+    aqi_df = air_quality_crawl()
     aqi_df = process_AQI_data(aqi_df)
     aqi_df = aqi_df[(aqi_df['Date'] > old_df['Date'].max()) & (aqi_df['Date'] < datetime.datetime.now())]
 
