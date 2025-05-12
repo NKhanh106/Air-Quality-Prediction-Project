@@ -72,7 +72,7 @@ def process_AQI_data(source_df):
         for column in ['co', 'no2', 'o3', 'pm10', 'pm25', 'so2']:
             if row[column] == 0:
                 avg_value = calculate_avg(row['Day of Year'], column)
-                source_df.at[index, column] = round(avg_value * (1 + np.random.uniform(-0.5, 0.5)),2)
+                source_df.at[index, column] = round(avg_value * (1 + np.random.uniform(-0.25, 0.25)),2)
 
     return source_df
                 
