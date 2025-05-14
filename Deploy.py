@@ -59,10 +59,10 @@ with tab1:
         predict_parameter, aqi, main_pollutant, attention = predict()
         st.subheader("Dự đoán của mô hình là :")
         for key in predict_parameter:
-            st.write(f"- Chỉ số {key} : {predict_parameter[key]:.3f} {para_unit[key]}")
+            st.write(f"- Chỉ số {key} : **{predict_parameter[key]:.3f}** {para_unit[key]}")
 
-        st.write(f"(+) Chỉ số chất lượng không khí(AQI) dự đoán là : {aqi}")
-        st.write(f"(+) Chất gây ô nhiễm chính được dự đoán là : {main_pollutant}")
+        st.write(f"(+) Chỉ số chất lượng không khí(AQI) dự đoán là : **{aqi}**")
+        st.write(f"(+) Chất gây ô nhiễm chính được dự đoán là : **{main_pollutant}**    ")
         st.subheader("Cảnh báo của các chuyên gia :")
         st.write("!!!", attention)
 
@@ -100,7 +100,7 @@ with tab3:
     st.divider()
 
     st.write("- Các mô hình sử dụng :")
-    st.write("**Mô hình LSTM(Long Short - Term Memmory)** : một mô hình học sâu ứng dụng mạng nơ-ron hồi tiếp(RNN - Recurrent Neural Network), được thiết kể để xử lý và dự đoán những dữ dữ liệu dạng chuỗi giá trị, khi mà dữ liệu hiện tại phụ thuộc vào các dữ liệu trước đó.")
+    st.write("**Mô hình LSTM(Long Short - Term Memory)** : một mô hình học sâu ứng dụng mạng nơ-ron hồi tiếp(RNN - Recurrent Neural Network), được thiết kể để xử lý và dự đoán những dữ dữ liệu dạng chuỗi giá trị, khi mà dữ liệu hiện tại phụ thuộc vào các dữ liệu trước đó.")
     st.markdown('<a href="https://viblo.asia/p/tim-hieu-lstm-bi-quyet-giu-thong-tin-lau-dai-hieu-qua-MG24BaezVz3" target="_blank">Mô hình LSTM</a>', unsafe_allow_html=True)
     st.write("**Mô hình Random Forests** : là một mô hình học máy mạnh mẽ và phổ biến hiện nay, thuộc loại học có giám sát(supervised learning). Mô hình này bao gồm nhiều cây quyết định con(Decision Tree), mỗi cây sẽ được huấn luyện trên 1 tập dữ liệu con và tại mỗi điểm phân chia(nhánh) thì sẽ chia dữ liệu theo các đặc trưng của chúng. Cuối cùng, mô hình sẽ lấy kết quả đa số(bài toán phân loại) hoặc là giá trị trung bình(bài toán hồi quy) của các cây để đưa ra kết quả của mô hình.")
     st.markdown('<a href="https://viblo.asia/p/phan-lop-bang-random-forests-trong-python-djeZ1D2QKWz" target="_blank">Mô hình RandomForests</a>', unsafe_allow_html=True)
