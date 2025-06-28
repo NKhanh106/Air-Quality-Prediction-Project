@@ -35,7 +35,7 @@ def air_quality_crawl():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
-    options.binary_location = "/usr/bin/chromium-browser"
+    options.binary_location = "/usr/bin/chromium"
     driver = webdriver.Chrome(options=options)
     driver.get("https://aqicn.org/historical/vn/#!city:vietnam/hanoi")
 
@@ -76,7 +76,7 @@ def scrape_weather_to_df(name):
     options.add_argument('--disable-notifications')
     options.add_argument('--blink-settings=imagesEnabled=false')
     options.add_argument("--window-size=1920,1080")
-    options.binary_location = "/usr/bin/chromium-browser"  # Tắt tải hình ảnh
+    options.binary_location = "/usr/bin/chromium"
     
     driver = webdriver.Chrome(options=options)
     url = f"https://www.worldweatheronline.com/{name}-weather-history/vn.aspx"
