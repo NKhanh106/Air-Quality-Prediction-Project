@@ -1,1 +1,1 @@
-from .Model_LSTM_build import AirQualityLSTM, create_sequences
+from .Model import AirQualityLSTM, create_sequences
