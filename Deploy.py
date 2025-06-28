@@ -32,7 +32,7 @@ para_unit = {
 }
 
 #sidebar
-st.sidebar.title("Thông tin dự án")
+st.sidebar.title("Thông tin cơ bản")
 st.sidebar.header("Tên dự án: **Dự đoán chất lượng không khí thành phố Hà Nội**")
 st.sidebar.write("Người thực hiện : **Chu Nam Khánh**")
 st.sidebar.write("Mô tả : Dự án này lấy thông tin dữ liệu về thời tiết và các chỉ số không khí của thành phố Hà Nội từ 1-1-2015 đến nay, huấn luyện mô hình và đưa ra dự đoán các chỉ số cho thời gian ngắn tiếp đấy.")
@@ -135,7 +135,7 @@ with tab3:
         - `[I_Lo, I_Hi]`: khoảng AQI tương ứng với `[C_Lo, C_Hi]`
     """)
     st.markdown(
-        'Cụ thể cách tính bạn truy cập vào đường dẫn : [Cách tính chỉ số AQI](https://tapchimoitruong.vn/chuyen-muc-3/H%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-m%E1%BB%91i-tr%C6%B0%E1%BB%9Dng-8115)'
+        'Cụ thể cách tính bạn truy cập vào đường dẫn : [Cách tính chỉ số AQI](https://tapchimoitruong.vn/chuyen-muc-3/H%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-m%E1%BB%9Bi-v%E1%BB%81-c%C3%A1ch-t%C3%ADnh-ch%E1%BB%89-s%E1%BB%91-ch%E1%BA%A5t-l%C6%B0%E1%BB%A3ng-kh%C3%B4ng-kh%C3%AD-c%E1%BB%A7a-Vi%E1%BB%87t-Nam-(VN_AQI-)-18414)'
     )
 
     st.write("-- Bên cạnh đó còn có các thông số của thời tiết như nhiệt độ, mức gió, mây mù,... cũng ít nhiều ảnh hưởng đến sự tác động của ô nhiễm lên cơ thể con người.")
