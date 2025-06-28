@@ -52,13 +52,13 @@ def predict():
     attention = ""
 
     if aqi <= 50:
-        attention = "Cảnh báo : Tình trạng thời tiết **'Tốt'**. Chất lượng không khí tốt, không ảnh hưởng tới sức khỏe"
+        attention = "Cảnh báo: Tình trạng thời tiết **'Tốt'**. Chất lượng không khí tốt, không ảnh hưởng tới sức khỏe"
     elif aqi <= 100:
-        attention = "Cảnh báo : Tình trạng thời tiết **'Trung bình'**. Chất lượng không khí ở mức chấp nhận được. Tuy nhiên, đối với những người nhạy cảm (người già, trẻ em, người mắc các bệnh hô hấp, tim mạch…) có thể chịu những tác động nhất định tới sức khỏe."
+        attention = "Cảnh báo: Tình trạng thời tiết **'Trung bình'**. Chất lượng không khí ở mức chấp nhận được. Tuy nhiên, đối với những người nhạy cảm (người già, trẻ em, người mắc các bệnh hô hấp, tim mạch…) có thể chịu những tác động nhất định tới sức khỏe."
     elif aqi <= 150:
-        attention = "Cảnh báo : Tình trạng thời tiết **'Kém'**. Những người nhạy cảm gặp phải các vấn đề về sức khỏe, những người bình thường ít ảnh hưởng."
+        attention = "Cảnh báo: Tình trạng thời tiết **'Kém'**. Những người nhạy cảm gặp phải các vấn đề về sức khỏe, những người bình thường ít ảnh hưởng."
     elif aqi <= 200:
-        attention = "Cảnh báo : Tình trạng thời tiết **'Xấu'**. Những người bình thường bắt đầu có các ảnh hưởng tới sức khỏe, nhóm người nhạy cảm có thể gặp những vấn đề sức khỏe nghiêm trọng hơn."
+        attention = "Cảnh báo: Tình trạng thời tiết **'Xấu'**. Những người bình thường bắt đầu có các ảnh hưởng tới sức khỏe, nhóm người nhạy cảm có thể gặp những vấn đề sức khỏe nghiêm trọng hơn."
     elif aqi <= 300:
         attention = "Cảnh báo hưởng tới sức khỏe: Tình trạng thời tiết **'Rất xấu'**. Mọi người bị ảnh hưởng tới sức khỏe nghiêm trọng hơn."
     else:
