@@ -30,12 +30,7 @@ def air_quality_crawl():
     }
     options.add_experimental_option("prefs", prefs)
 
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--window-size=1920,1080")
-    options.binary_location = "/usr/bin/chromium"
+    options.add_argument("--start-maximized")
     driver = webdriver.Chrome(options=options)
     driver.get("https://aqicn.org/historical/vn/#!city:vietnam/hanoi")
 
@@ -67,16 +62,11 @@ def air_quality_crawl():
 def scrape_weather_to_df(name):
     # Set up options để giảm tài nguyên sử dụng
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
     options.add_argument('--disable-extensions')
     options.add_argument('--disable-infobars')
     options.add_argument('--disable-notifications')
-    options.add_argument('--blink-settings=imagesEnabled=false')
-    options.add_argument("--window-size=1920,1080")
-    options.binary_location = "/usr/bin/chromium"
+    options.add_argument('--blink-settings=imagesEnabled=false')  # Tắt tải hình ảnh
     
     driver = webdriver.Chrome(options=options)
     url = f"https://www.worldweatheronline.com/{name}-weather-history/vn.aspx"

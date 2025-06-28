@@ -79,8 +79,7 @@ def process_AQI_data(source_df):
 
 def process_weather_data(source_df):
     #Bỏ cột không cần thiết
-    if 'Weather' in source_df.columns:
-        source_df.drop(columns=['Weather'], inplace=True)
+    source_df.drop(columns=['Weather'], inplace=True)
 
     #Định dạng lại các kiểu dữ liệu trong các cột
     source_df['Date'] = source_df['Date'].astype('datetime64[ns]')

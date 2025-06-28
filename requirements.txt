@@ -1,9 +1,0 @@
-streamlit
-selenium
-pandas
-numpy
-matplotlib
-scikit-learn
-joblib
-torch
-tqdm
