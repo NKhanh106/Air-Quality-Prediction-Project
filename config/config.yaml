@@ -1,0 +1,54 @@
+# Configuration file cho Air Quality Prediction Project
+
+# Data paths
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  external_dir: "data/external"
+  final_data_file: "FinalData.csv"
+  aqi_file: "AQI.csv"
+
+# Model paths
+models:
+  lstm_dir: "models/lstm"
+  rf_dir: "models/random_forest"
+  lstm_model_file: "lstm_model.pth"
+  rf_model_file: "random_forest_model.pkl"
+  scaler_file: "scaler.pkl"
+
+# LSTM Model hyperparameters
+lstm:
+  input_size: 12
+  hidden_size: 50
+  num_layers: 2
+  output_size: 12
+  seq_length: 14
+  batch_size: 64
+  num_epochs: 200
+  learning_rate: 0.001
+  dropout: 0.2
+  patience: 15
+  min_delta: 1e-6
+
+# Random Forest hyperparameters
+random_forest:
+  use_advanced_features: true
+  lag_steps: 12
+  n_trials: 50
+  lag_steps_list: [1, 2, 3, 7, 14, 30]
+  rolling_windows: [3, 7, 14, 30]
+
+# Features
+features:
+  pollutants: ["co", "no2", "o3", "pm10", "pm25", "so2"]
+  weather: ["Temp", "Rain", "Cloud", "Pressure", "Wind", "Gust"]
+  all: ["co", "no2", "o3", "pm10", "pm25", "so2", "Temp", "Rain", "Cloud", "Pressure", "Wind", "Gust"]
+
+# Data sources
+sources:
+  aqi_url: "https://aqicn.org/historical/vn/#!city:vietnam/hanoi"
+  weather_url: "https://www.worldweatheronline.com/ha-noi-weather-history/vn.aspx"
+
+# Random seed
+random_seed: 42
+
