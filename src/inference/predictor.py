@@ -3,26 +3,29 @@ Prediction Module - Dự đoán chất lượng không khí
 """
 
 import os
-import torch
 import pandas as pd
-import datetime
 import joblib
 
-from ..models.lstm import AirQualityLSTM, create_sequences
+from ..features.engineering import create_all_features, prepare_rf_features
 from ..utils.paths import get_data_path, get_model_path
 from ..utils.aqi_calculator import calculate_aqi
 
 def predict():
     """
     Dự đoán chất lượng không khí cho ngày tiếp theo
-    Sử dụng scaler đã lưu từ training (không fit lại để tránh data leakage)
+    Sử dụng Random Forest model đã được train
     """
-    # Load scaler đã lưu từ training
-    scaler_path = get_model_path('scaler.pkl', 'lstm')
-    if not os.path.exists(scaler_path):
-        raise FileNotFoundError(f"Scaler không tồn tại tại {scaler_path}. Vui lòng train model trước.")
+    # Load model và feature names đã lưu từ training
+    model_path = get_model_path('random_forest_model.pkl', 'rf')
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model không tồn tại tại {model_path}. Vui lòng train model trước.")
     
-    scaler = joblib.load(scaler_path)
+    feature_names_path = get_model_path('rf_feature_names.pkl', 'rf')
+    if not os.path.exists(feature_names_path):
+        raise FileNotFoundError(f"Feature names không tồn tại tại {feature_names_path}. Vui lòng train model trước.")
+    
+    model = joblib.load(model_path)
+    saved_feature_names = joblib.load(feature_names_path)
     
     # Đọc dữ liệu
     csv_path = get_data_path("FinalData.csv", "processed")
@@ -30,48 +33,50 @@ def predict():
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df = df.sort_values('Date').reset_index(drop=True)
     
-    features = ['co','no2','o3','pm10','pm25','so2','Temp','Rain','Cloud','Pressure','Wind','Gust']
+    target_cols = ['co', 'no2', 'o3', 'pm10', 'pm25', 'so2', 
+                   'Temp', 'Rain', 'Cloud', 'Pressure', 'Wind', 'Gust']
     
     # Kiểm tra xem có đủ features không
-    missing_features = [f for f in features if f not in df.columns]
+    missing_features = [f for f in target_cols if f not in df.columns]
     if missing_features:
         raise ValueError(f"Thiếu các features: {missing_features}")
     
-    data = df[features].values
+    # Tạo features giống như khi training (quan trọng!)
+    print("🔧 Đang tạo features cho prediction...")
+    df_features = create_all_features(
+        df,
+        lag_steps=[1, 2, 3, 7, 14, 30],
+        rolling_windows=[3, 7, 14, 30]
+    )
     
-    # CHỈ transform, KHÔNG fit lại (quan trọng!)
-    data_norm = scaler.transform(data)
-
-    # Khởi tạo model và load weights
-    model_path = get_model_path("lstm_model.pth", "lstm")
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model không tồn tại tại {model_path}. Vui lòng train model trước.")
+    # Chuẩn bị features (loại bỏ NaN rows)
+    X, _, _ = prepare_rf_features(df_features, target_cols)
     
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    input_size, hidden_size, num_layers, output_size = 12, 50, 2, 12
-    dropout = 0.2  # Phải khớp với dropout khi training
+    # Lấy row cuối cùng để predict (ngày gần nhất)
+    if len(X) == 0:
+        raise ValueError("Không có dữ liệu hợp lệ để predict. Cần ít nhất 30 ngày dữ liệu.")
     
-    model = AirQualityLSTM(input_size, hidden_size, num_layers, output_size, dropout=dropout).to(device)
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.eval()
-
-    # Chuẩn bị input sequence mới (14 mốc cuối)
-    seq_length = 14
-    last_seq = data_norm[-seq_length:]                      # shape (14,12)
-    input_tensor = torch.FloatTensor(last_seq).unsqueeze(0) # shape (1,14,12)
-    input_tensor = input_tensor.to(device)
-
-    # Dự đoán next step
-    with torch.no_grad():
-        pred_norm = model(input_tensor)        # shape (1,12)
-    pred_norm = pred_norm.cpu().numpy()       # shape (1,12)
-
-    # Inverse transform để ra giá trị gốc
-    pred = scaler.inverse_transform(pred_norm)  # shape (1,12)
-    pred = pred.flatten()
+    # Lấy row cuối cùng
+    last_row = X.iloc[[-1]].copy()
+    
+    # Đảm bảo thứ tự features khớp với model
+    # Model được train với feature names đã lưu
+    missing_cols = set(saved_feature_names) - set(last_row.columns)
+    if missing_cols:
+        # Thêm các cột thiếu với giá trị 0 (hoặc có thể dùng giá trị mặc định khác)
+        for col in missing_cols:
+            last_row[col] = 0
+        print(f"⚠️  Cảnh báo: Thiếu {len(missing_cols)} features, đã set = 0")
+    
+    # Chỉ lấy các features mà model đã được train
+    last_row = last_row[saved_feature_names]
+    
+    # Dự đoán
+    pred = model.predict(last_row)  # shape (1, 12)
+    pred = pred.flatten()  # shape (12,)
 
     answer = {}
-    for feat, val in zip(features, pred):
+    for feat, val in zip(target_cols, pred):
         answer[feat] = val
 
     # Tính AQI cho các chất ô nhiễm
